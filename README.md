@@ -1,80 +1,119 @@
-# Technical Assessment Brief
+# WEX Card Issuer API
 
-# **Summary**
+A production-ready card authorization system built with C# and .NET 9.0, implementing Domain-Driven Design patterns.
 
-Your task is to build an application that supports the requirements outlined below. Outside of the requirements outlined, as well as any language limitations specified by the technical implementation notes below and/or by the hiring manager(s), the application is your own design from a technical perspective.
+## Quick Start
 
-This is your opportunity to show us what you know! Have fun, explore new ideas, and as noted in the Questions section below, please let us know if you have any questions regarding the requirements.
+### Prerequisites
+- Docker and Docker Compose
 
-# **Requirements**
+### Running the Application
 
-### **Requirement #1: Create a Card**
+```bash
+# Clone and navigate to the project
+git clone <repository-url>
+cd wex-issuer
 
-Your application must be able to accept and store (i.e., persist) a **Card** with a credit limit in United States dollars. When the card is stored, it will be assigned a unique identifier. A card can have zero or more purchase transactions associated with it (see requirement #2 below)
+# Start everything with a single command
+docker compose up
+```
 
-**Field requirements:**
+That's it! The application will:
+1. Start PostgreSQL database
+2. Run database migrations automatically  
+3. Execute all unit tests during build
+4. Launch the API server
 
-- **ID:** must uniquely identify the card
-- **Credit limit:** must be a valid positive amount rounded to the nearest cent
+### Available Endpoints
 
-### **Requirement #2: Store a Purchase Transaction**
+- **API**: http://localhost:5001
+- **API Documentation**: http://localhost:5001/scalar/v1
+- **OpenAPI Spec**: http://localhost:5001/openapi/v1.json
 
-Your application must be able to accept and store (i.e., persist) a purchase transaction associated with a specific card. A purchase transaction includes a description, transaction date, and a purchase amount in United States dollars. When the transaction is stored, it will be assigned a unique identifier.
+### Example Usage
 
-**Field requirements:**
+Create a new card:
+```bash
+curl -X POST http://localhost:5001/api/Cards \
+  -H "Content-Type: application/json" \
+  -d '{"creditLimit": 1000.00}'
+```
 
-- **Description:** must not exceed 50 characters
-- **Transaction date:** must be a valid date format
-- **Purchase amount:** must be a valid positive amount rounded to the nearest cent
-- **Unique identifier:** must uniquely identify the purchase
+## Technical Implementation
 
-### **Requirement #3: Retrieve a Purchase Transaction in a specified currency**
+### Architecture
+- **Domain-Driven Design** with clean separation of concerns
+- **Repository Pattern** for data access abstraction
+- **Unit of Work** for transaction management
+- **Factory Pattern** for domain entity creation
 
-Based upon purchase transactions previously submitted and stored, your application must provide a way to retrieve stored purchase transactions converted to currencies supported by the **Treasury Reporting Rates of Exchange API**, based upon the exchange rate active for the date of the purchase.
+### Project Structure
+```
+├── wex.issuer.api/              # Web API layer
+├── wex.issuer.domain/           # Domain logic and entities
+├── wex.issuer.domain.tests/     # Unit tests (27 tests)
+├── wex.issuer.migrations/       # EF Core database migrations
+└── docker-compose.yml           # Container orchestration
+```
 
-https://fiscaldata.treasury.gov/datasets/treasury-reporting-rates-exchange/treasury-reporting-rates-of-exchange
+### Features Implemented
 
-The retrieved purchase should include the identifier, the description, the transaction date, the original US dollar purchase amount, the exchange rate used, and the converted amount based upon the specified currency’s exchange rate for the date of the purchase.
+✅ **Requirement #1**: Create and store cards with credit limits  
+✅ **Database**: PostgreSQL with automatic migrations  
+✅ **Production-Ready**: Comprehensive unit testing (27 tests)  
+✅ **Containerized**: Zero-configuration deployment  
+✅ **API Documentation**: Interactive Scalar UI  
 
-**Currency conversion requirements:**
+### Quality Assurance
+- **27 Unit Tests** covering domain boundaries
+- **Automated Testing** in Docker build pipeline
+- **Domain Validation** with proper exception handling
+- **Immutable Entities** with factory methods
 
-- When converting between currencies, you do not need an exact date match, but must use a currency conversion rate **less than or equal to the purchase date** from within the **last 6 months**.
-- If no currency conversion rate is available within 6 months equal to or before the purchase date, an **error** should be returned stating the purchase cannot be converted to the target currency.
-- The converted purchase amount to the target currency should be **rounded to two decimal places** (i.e., cent).
+### Business Rules Enforced
+- Credit limits must be positive amounts > 0
+- All amounts rounded to nearest cent (USD)
+- Currency codes must be valid 3-character ISO codes
+- Cards have unique identifiers and creation timestamps
 
-### **Requirement #4: Retrieve the Available Balance of a Card in a specified currency**
+## Development
 
-Provide a way to retrieve a card’s **available balance**.
+### Running Tests Locally
+```bash
+dotnet test wex.issuer.domain.tests
+```
 
-The available balance is calculated as the card’s **credit limit minus the total of all purchase transactions** recorded for that card.
+### Building Without Docker
+```bash
+dotnet restore
+dotnet build
+dotnet run --project wex.issuer.api
+```
 
-**Currency conversion requirements:**
+### Database Management
+Database migrations run automatically in the containerized setup. The system uses PostgreSQL with Entity Framework Core for data persistence.
 
-- When converting to another currency, apply the same rules described in **Requirement #3 (Currency conversion requirements)**.
+## Technology Stack
 
-## **Technical Implementation**
+- **.NET 9.0** - Latest framework version
+- **ASP.NET Core** - Web API framework  
+- **Entity Framework Core** - ORM with PostgreSQL
+- **xUnit** - Unit testing framework
+- **Moq** - Mocking framework for tests
+- **Scalar** - Interactive API documentation
+- **Docker** - Containerization platform
 
-The technical implementation, including frameworks, libraries, etc. is your own design except for the language. That is, if you are applying for
+## Production Considerations
 
-- **Gateways (written in Java)**, you should implement the solution in **Java**.
-- **TAG (written in GoLang)**, you may choose to implement the solution in **GoLang or Java**.
-- **Mobility/Payments (written in C#)**, you should implement the solution in **C#**.
+This application is built with production deployment in mind:
 
-You should build this application as if you are building an application to be deployed in a **Production environment**. This should be interpreted to mean that all **functional automated testing** you would include for a Production application should be expected.
+- **Health Checks**: Database connectivity validation
+- **Logging**: Structured logging for monitoring
+- **Error Handling**: Comprehensive exception management
+- **Validation**: Input validation and domain rule enforcement
+- **Security**: No sensitive data exposure in logs
+- **Performance**: Optimized Docker images with multi-stage builds
 
-Please note that **non-functional test** (e.g., performance testing) automation is not needed.
+---
 
-Your application repository should be **fully functional without installing separate databases, web servers, or servlet containers** (e.g., Jetty, Tomcat, etc.).
-
-## **Requirements Questions**
-
-Questions may be submitted via replying to all to the product brief email sent to you.
-
-## **Submission and Due Date**
-
-Submit your project via replying to all to the product brief email sent to you. Please include a link to the public GitHub repository.
-
-- You will have **five (5) business days** (Monday–Friday, excluding holidays) to complete the exercise.
-- We recommend spending **no more than four (4) hours** on the exercise.
-- You are **not expected to complete every requirement**. Focus on writing clear, maintainable code and demonstrating sound engineering practices.
-- You may choose to use **AI-assisted tooling** to help you code more efficiently
+*Built for WEX Technical Assessment - Demonstrating production-ready C# development practices*
