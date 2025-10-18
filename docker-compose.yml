@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: wex-issuer-postgres
+    environment:
+      POSTGRES_DB: wex_issuer
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d wex_issuer"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wex-network
+
+volumes:
+  postgres_data:
+
+networks:
+  wex-network:
+    driver: bridge
