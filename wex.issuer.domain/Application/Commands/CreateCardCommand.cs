@@ -1,9 +1,12 @@
+using wex.issuer.domain.Application.Interfaces;
+using wex.issuer.domain.Entities;
+
 namespace wex.issuer.domain.Application.Commands;
 
 /// <summary>
 /// Command to create a new card with validation
 /// </summary>
-public record CreateCardCommand(decimal CreditLimit, string Currency = "USD")
+public record CreateCardCommand(decimal CreditLimit, string Currency = "USD") : ICommand<Card>
 {
     /// <summary>
     /// The credit limit for the card

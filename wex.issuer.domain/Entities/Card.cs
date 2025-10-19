@@ -7,7 +7,10 @@ public class Card
     public Guid Id { get; private set; }
     public decimal CreditLimit { get; private set; }
     public string Currency { get; private set; }
-    public DateTime CreatedAt { get; private set; }
+    public DateTimeOffset CreatedAt { get; private set; }
+
+    // Navigation property for EF Core
+    public ICollection<Transaction> Transactions { get; private set; } = new List<Transaction>();
 
     // Private constructor for EF Core
     private Card()
@@ -16,7 +19,7 @@ public class Card
     }
 
     // Private constructor for domain use
-    private Card(Guid id, decimal creditLimit, string currency, DateTime createdAt)
+    private Card(Guid id, decimal creditLimit, string currency, DateTimeOffset createdAt)
     {
         Id = id;
         CreditLimit = creditLimit;
@@ -41,7 +44,7 @@ public class Card
             id: Guid.NewGuid(),
             creditLimit: Math.Round(creditLimit, 2), // Round to nearest cent
             currency: currency.ToUpperInvariant(), // Normalize currency
-            createdAt: DateTime.UtcNow
+            createdAt: DateTimeOffset.UtcNow
         );
     }
 
@@ -67,13 +70,24 @@ public class Card
     }
 
     /// <summary>
-    /// Get available balance (for future use with transactions)
-    /// Currently returns the full credit limit since no transactions exist
+    /// Get available balance by subtracting total transactions from credit limit
     /// </summary>
+    /// <returns>Available balance (Credit Limit - Total Transactions)</returns>
     public decimal GetAvailableBalance()
     {
-        // For now, return full credit limit
-        // Later: CreditLimit - total of all transactions
-        return CreditLimit;
+        var totalTransactions = Transactions?.Sum(t => t.PurchaseAmount) ?? 0;
+        return CreditLimit - totalTransactions;
+    }
+
+    /// <summary>
+    /// Get available balance with provided transactions collection
+    /// Useful when transactions are loaded separately from the repository
+    /// </summary>
+    /// <param name="transactions">Collection of transactions for this card</param>
+    /// <returns>Available balance (Credit Limit - Total Transactions)</returns>
+    public decimal GetAvailableBalance(IEnumerable<Transaction> transactions)
+    {
+        var totalTransactions = transactions?.Sum(t => t.PurchaseAmount) ?? 0;
+        return CreditLimit - totalTransactions;
     }
 }

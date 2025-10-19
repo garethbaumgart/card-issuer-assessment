@@ -1,13 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+using wex.issuer.domain;
 using wex.issuer.domain.Infrastructure;
-using wex.issuer.domain.Infrastructure.Repositories;
-using wex.issuer.domain.Repositories;
-using wex.issuer.domain.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
@@ -17,12 +14,7 @@ builder.Services.AddDbContext<WexIssuerDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection"),
         b => b.MigrationsAssembly("wex.issuer.migrations")));
 
-// Add Repository Pattern
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
-builder.Services.AddScoped<ICardRepository, CardRepository>();
-
-// Add Application Services
-builder.Services.AddScoped<CardService>();
+builder.Services.AddDomainServices();
 
 var app = builder.Build();
 

@@ -6,6 +6,7 @@ namespace wex.issuer.domain.Infrastructure;
 public class WexIssuerDbContext(DbContextOptions<WexIssuerDbContext> options) : DbContext(options)
 {
     public DbSet<Card> Cards { get; set; } = null!;
+    public DbSet<Transaction> Transactions { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

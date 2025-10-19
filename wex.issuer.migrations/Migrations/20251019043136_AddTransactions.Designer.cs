@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using wex.issuer.domain.Infrastructure;
@@ -11,9 +12,11 @@ using wex.issuer.domain.Infrastructure;
 namespace wex.issuer.migrations.Migrations
 {
     [DbContext(typeof(WexIssuerDbContext))]
-    partial class WexIssuerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251019043136_AddTransactions")]
+    partial class AddTransactions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -72,6 +75,15 @@ namespace wex.issuer.migrations.Migrations
 
                     b.HasIndex("CardId")
                         .HasDatabaseName("IX_Transactions_CardId");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_Transactions_CreatedAt");
+
+                    b.HasIndex("TransactionDate")
+                        .HasDatabaseName("IX_Transactions_TransactionDate");
+
+                    b.HasIndex("CardId", "TransactionDate")
+                        .HasDatabaseName("IX_Transactions_CardId_TransactionDate");
 
                     b.ToTable("Transactions", (string)null);
                 });

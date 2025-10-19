@@ -1,7 +1,8 @@
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using wex.issuer.api.DTOs;
 using wex.issuer.domain.Application.Commands;
-using wex.issuer.domain.Application.Services;
+using wex.issuer.domain.Application.Queries;
 using wex.issuer.domain.Exceptions;
 
 namespace wex.issuer.api.Controllers;
@@ -10,12 +11,12 @@ namespace wex.issuer.api.Controllers;
 [Route("api/[controller]")]
 public class CardsController : ControllerBase
 {
-    private readonly CardService _cardService;
+    private readonly IMediator _mediator;
     private readonly ILogger<CardsController> _logger;
 
-    public CardsController(CardService cardService, ILogger<CardsController> logger)
+    public CardsController(IMediator mediator, ILogger<CardsController> logger)
     {
-        _cardService = cardService;
+        _mediator = mediator;
         _logger = logger;
     }
 
@@ -47,8 +48,8 @@ public class CardsController : ControllerBase
                 request.Currency ?? "USD"
             );
 
-            // Execute through card service
-            var card = await _cardService.CreateCardAsync(command);
+            // Execute through mediator
+            var card = await _mediator.Send(command);
 
             // Map to response DTO
             var response = new CardResponse
@@ -95,7 +96,8 @@ public class CardsController : ControllerBase
     {
         try
         {
-            var card = await _cardService.GetCardByIdAsync(id);
+            var query = new GetCardByIdQuery(id);
+            var card = await _mediator.Send(query);
 
             if (card == null)
             {

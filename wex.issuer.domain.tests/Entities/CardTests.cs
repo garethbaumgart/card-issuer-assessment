@@ -20,7 +20,7 @@ public class CardTests
         Assert.NotEqual(Guid.Empty, card.Id);
         Assert.Equal(1000.50m, card.CreditLimit);
         Assert.Equal("USD", card.Currency);
-        Assert.True((DateTime.UtcNow - card.CreatedAt).TotalSeconds < 1); // Created within last second
+        Assert.True((DateTimeOffset.UtcNow - card.CreatedAt).TotalSeconds < 1); // Created within last second
     }
 
     [Fact]
@@ -105,7 +105,7 @@ public class CardTests
     }
 
     [Fact]
-    public void GetAvailableBalance_ShouldReturnCreditLimit()
+    public void GetAvailableBalance_WithNoTransactions_ShouldReturnCreditLimit()
     {
         // Arrange
         var creditLimit = 1500.75m;
@@ -116,6 +116,75 @@ public class CardTests
 
         // Assert
         Assert.Equal(creditLimit, availableBalance);
+    }
+
+    [Fact]
+    public void GetAvailableBalance_WithTransactions_ShouldReturnCreditLimitMinusTransactions()
+    {
+        // Arrange
+        var creditLimit = 1000.00m;
+        var card = Card.Create(creditLimit, "USD");
+        
+        // Use reflection to add transactions since Transactions property has private setter
+        var transactionsProperty = typeof(Card).GetProperty("Transactions");
+        var transactions = (ICollection<Transaction>)transactionsProperty!.GetValue(card)!;
+        
+        var transaction1 = Transaction.Create(card.Id, "Purchase 1", DateTimeOffset.UtcNow.AddHours(-2), 200.00m);
+        var transaction2 = Transaction.Create(card.Id, "Purchase 2", DateTimeOffset.UtcNow.AddHours(-1), 150.50m);
+        
+        transactions.Add(transaction1);
+        transactions.Add(transaction2);
+
+        // Act
+        var availableBalance = card.GetAvailableBalance();
+
+        // Assert
+        Assert.Equal(649.50m, availableBalance); // 1000 - 200 - 150.50 = 649.50
+    }
+
+    [Fact]
+    public void GetAvailableBalance_WithSingleTransaction_ShouldReturnCorrectBalance()
+    {
+        // Arrange
+        var creditLimit = 500.00m;
+        var card = Card.Create(creditLimit, "USD");
+        
+        // Use reflection to add transaction
+        var transactionsProperty = typeof(Card).GetProperty("Transactions");
+        var transactions = (ICollection<Transaction>)transactionsProperty!.GetValue(card)!;
+        
+        var transaction = Transaction.Create(card.Id, "Purchase", DateTimeOffset.UtcNow.AddHours(-1), 99.99m);
+        transactions.Add(transaction);
+
+        // Act
+        var availableBalance = card.GetAvailableBalance();
+
+        // Assert
+        Assert.Equal(400.01m, availableBalance); // 500 - 99.99 = 400.01
+    }
+
+    [Fact]
+    public void GetAvailableBalance_WithTransactionsExceedingLimit_ShouldReturnNegativeBalance()
+    {
+        // Arrange
+        var creditLimit = 100.00m;
+        var card = Card.Create(creditLimit, "USD");
+        
+        // Use reflection to add transactions
+        var transactionsProperty = typeof(Card).GetProperty("Transactions");
+        var transactions = (ICollection<Transaction>)transactionsProperty!.GetValue(card)!;
+        
+        var transaction1 = Transaction.Create(card.Id, "Purchase 1", DateTime.UtcNow.AddHours(-2), 75.00m);
+        var transaction2 = Transaction.Create(card.Id, "Purchase 2", DateTime.UtcNow.AddHours(-1), 50.00m);
+        
+        transactions.Add(transaction1);
+        transactions.Add(transaction2);
+
+        // Act
+        var availableBalance = card.GetAvailableBalance();
+
+        // Assert
+        Assert.Equal(-25.00m, availableBalance); // 100 - 75 - 50 = -25
     }
 
     [Theory]

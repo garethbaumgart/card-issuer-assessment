@@ -17,6 +17,7 @@ public class CardRepository(WexIssuerDbContext context) : ICardRepository
     public async Task<Card?> GetByIdAsync(Guid id)
     {
         return await context.Cards
+            .Include(c => c.Transactions)
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 }

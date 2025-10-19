@@ -23,7 +23,7 @@ public record CardResponse
     /// <summary>
     /// When the card was created
     /// </summary>
-    public DateTime CreatedAt { get; init; }
+    public DateTimeOffset CreatedAt { get; init; }
 
     /// <summary>
     /// The available balance on the card
