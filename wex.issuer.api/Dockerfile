@@ -1,4 +1,3 @@
-# Use the official .NET 9.0 SDK image for building
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 
 # Set the working directory
@@ -43,7 +42,7 @@ EXPOSE 8080
 
 # Set environment variables
 ENV ASPNETCORE_URLS=http://+:8080
-ENV ASPNETCORE_ENVIRONMENT=Production
+# ENV ASPNETCORE_ENVIRONMENT is set in the docker-compopse.yml
 
 # Set the entrypoint to run the API
 ENTRYPOINT ["dotnet", "wex.issuer.api.dll"]

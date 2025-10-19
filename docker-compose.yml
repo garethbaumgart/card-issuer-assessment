@@ -15,8 +15,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - wex-network
 
   migrations:
     build:
@@ -29,8 +27,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    networks:
-      - wex-network
 
   api:
     build:
@@ -47,12 +43,6 @@ services:
         condition: service_healthy
       migrations:
         condition: service_completed_successfully
-    networks:
-      - wex-network
 
 volumes:
   postgres_data:
-
-networks:
-  wex-network:
-    driver: bridge

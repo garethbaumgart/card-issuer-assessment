@@ -18,7 +18,7 @@ cd wex-issuer
 docker compose up
 ```
 
-That's it! The application will:
+The application will:
 1. Start PostgreSQL database
 2. Run database migrations automatically  
 3. Execute all unit tests during build
@@ -50,7 +50,7 @@ curl -X POST http://localhost:5001/api/Cards \
 ### Project Structure
 ```
 ├── wex.issuer.api/              # Web API layer
-├── wex.issuer.domain/           # Domain logic and entities
+├── wex.issuer.domain/           # Domain logic, entities, persistence and external services - can/should be broken up further as needed
 ├── wex.issuer.domain.tests/     # Unit tests (27 tests)
 ├── wex.issuer.migrations/       # EF Core database migrations
 └── docker-compose.yml           # Container orchestration
@@ -65,10 +65,8 @@ curl -X POST http://localhost:5001/api/Cards \
 ✅ **API Documentation**: Interactive Scalar UI  
 
 ### Quality Assurance
-- **27 Unit Tests** covering domain boundaries
-- **Automated Testing** in Docker build pipeline
-- **Domain Validation** with proper exception handling
-- **Immutable Entities** with factory methods
+- **Unit Tests** covering core functionality
+- **Automated Test Execution** in a Docker build pipeline
 
 ### Business Rules Enforced
 - Credit limits must be positive amounts > 0
@@ -113,7 +111,3 @@ This application is built with production deployment in mind:
 - **Validation**: Input validation and domain rule enforcement
 - **Security**: No sensitive data exposure in logs
 - **Performance**: Optimized Docker images with multi-stage builds
-
----
-
-*Built for WEX Technical Assessment - Demonstrating production-ready C# development practices*
