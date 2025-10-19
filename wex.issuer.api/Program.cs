@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using wex.issuer.domain;
+using wex.issuer.domain.External;
 using wex.issuer.domain.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,9 @@ builder.Services.AddDbContext<WexIssuerDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         b => b.MigrationsAssembly("wex.issuer.migrations")));
+
+// Add HTTP Client for Treasury API
+builder.Services.AddHttpClient<ITreasuryApiService, TreasuryApiService>();
 
 builder.Services.AddDomainServices();
 

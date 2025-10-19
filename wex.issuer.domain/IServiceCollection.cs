@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using wex.issuer.domain.External;
 using wex.issuer.domain.Infrastructure.Repositories;
 using wex.issuer.domain.Repositories;
 
@@ -20,6 +21,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<ICardRepository, CardRepository>();
         services.AddScoped<ITransactionRepository, TransactionRepository>();
+
+        // Add External Services
+        services.AddScoped<ITreasuryApiService, TreasuryApiService>();
 
         return services;
     }

@@ -177,4 +177,65 @@ public class TransactionsController(IMediator mediator, ILogger<TransactionsCont
             return StatusCode(500, "An unexpected error occurred");
         }
     }
+
+    /// <summary>
+    /// Retrieves a transaction converted to a specified currency
+    /// </summary>
+    /// <param name="id">The transaction's unique identifier</param>
+    /// <param name="currency">The target currency for conversion</param>
+    /// <returns>The transaction converted to the specified currency</returns>
+    /// <response code="200">Transaction found and converted successfully</response>
+    /// <response code="400">Invalid currency or conversion not possible</response>
+    /// <response code="404">Transaction not found</response>
+    /// <response code="500">Internal server error</response>
+    [HttpGet("{id}/convert/{currency}")]
+    [ProducesResponseType(typeof(ConvertedTransactionResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(string), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<ConvertedTransactionResponse>> GetTransactionWithCurrencyConversion(Guid id, string currency)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(currency))
+            {
+                return BadRequest("Currency parameter is required");
+            }
+
+            var query = new GetTransactionWithCurrencyConversionQuery(id, currency);
+            var result = await mediator.Send(query);
+
+            if (result == null)
+            {
+                return NotFound($"Transaction with ID {id} not found");
+            }
+
+            var response = new ConvertedTransactionResponse
+            {
+                Id = result.Id,
+                CardId = result.CardId,
+                Description = result.Description,
+                TransactionDate = result.TransactionDate,
+                OriginalAmount = result.OriginalAmount,
+                OriginalCurrency = result.OriginalCurrency,
+                ExchangeRate = result.ExchangeRate,
+                ConvertedAmount = result.ConvertedAmount,
+                TargetCurrency = result.TargetCurrency,
+                ExchangeRateDate = result.ExchangeRateDate,
+                CreatedAt = result.CreatedAt
+            };
+
+            return Ok(response);
+        }
+        catch (DomainException ex)
+        {
+            logger.LogWarning("Currency conversion failed: {Message}", ex.Message);
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error occurred while converting transaction {TransactionId} to currency {Currency}", id, currency);
+            return StatusCode(500, "An unexpected error occurred");
+        }
+    }
 }
