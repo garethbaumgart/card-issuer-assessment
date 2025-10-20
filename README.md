@@ -12,7 +12,7 @@ A production-ready card authorization system built with C# and .NET 9.0, impleme
 ```bash
 # Clone and navigate to the project
 git clone https://github.com/garethbaumgart/card-issuer-assessment.git
-cd wex-issuer
+Navigate to the root folder (same location as your docker-compose file)
 
 # Start everything with a single command
 docker compose up
