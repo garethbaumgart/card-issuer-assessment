@@ -3,3 +3,11 @@ obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
+
+# macOS
+.DS_Store
+.DS_Store?
+
+# Visual Studio / JetBrains
+.vs/
+.idea/
